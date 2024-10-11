@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table à partir de JSON</title>
+    <style>
+        table {
+            width: 50%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<h2 style="text-align:center;">Table à partir de JSON</h2>
+
+<!-- Formulaire pour ajouter une nouvelle ligne -->
+<div style="text-align:center; margin-bottom: 20px;">
+    <form id="addForm">
+        <input type="text" name="Commune" placeholder="Commune" required>
+        <input type="number" name="Lien" placeholder="Lien" required>
+        <button type="submit">Ajouter</button>
+    </form>
+</div>
+
+<table id="data-table">
+    <thead>
+        <tr>
+            <th>Commune</th>
+            <th>Lien</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script>
+    // Fonction pour charger les données JSON et les afficher dans la table
+    function loadTableData() {
+        fetch('data.json')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('data-table').querySelector('tbody');
+                tableBody.innerHTML = ''; // Vide le corps de la table
+
+                // Ajout des lignes à la table
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${item.Commune}</td><td>${item.Lien}</td>`;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Erreur lors du chargement du JSON:', error));
+    }
+
+    // Chargement initial des données JSON
+    loadTableData();
+
+    // Gestion de la soumission du formulaire
+    document.getElementById('addForm').addEventListener('submit', function (event) {
+        event.preventDefault(); // Empêche le rechargement de la page
+
+        const formData = new FormData(this);
+
+        // Envoie des données au serveur via fetch
+        fetch('add.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Recharge les données de la table après ajout
+                loadTableData();
+                this.reset(); // Réinitialise le formulaire
+            } else {
+                alert(result.message); // Affiche une erreur si besoin
+            }
+        })
+        .catch(error => console.error('Erreur lors de l\'ajout:', error));
+    });
+</script>
+
+</body>
+</html>
